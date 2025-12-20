@@ -11,6 +11,7 @@ import {
   Package,
 } from "lucide-react";
 import clsx from "clsx";
+import { BottomNav } from "./BottomNav";
 
 export function Layout() {
   const navigate = useNavigate();
@@ -147,9 +148,10 @@ export function Layout() {
         </header>
 
         {/* Page Content */}
-        <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-50 p-4 lg:p-8">
+        <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-50 p-4 lg:p-8 pb-20 lg:pb-8">
           <Outlet />
         </main>
+        <BottomNav />
       </div>
     </div>
   );
