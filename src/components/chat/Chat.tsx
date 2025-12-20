@@ -13,6 +13,7 @@ export function Chat({ packageId }: ChatProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState("");
   const [loading, setLoading] = useState(true);
+  const [timeoutError, setTimeoutError] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const channelRef = useRef<any>(null);
   const { user } = useAuthStore();
@@ -39,6 +40,16 @@ export function Chat({ packageId }: ChatProps) {
       }
     };
   }, [packageId]);
+
+  useEffect(() => {
+    const t = setTimeout(() => {
+      if (loading)
+        setTimeoutError(
+          "Le chargement prend trop de temps. Veuillez réessayer."
+        );
+    }, 30000);
+    return () => clearTimeout(t);
+  }, [loading]);
 
   useEffect(() => {
     scrollToBottom();
@@ -153,35 +164,7 @@ export function Chat({ packageId }: ChatProps) {
       setNewMessage("");
       addOrUpdateMessage(data as Message);
 
-      // Notifications au destinataire
-      try {
-        const senderName = user.email || "Utilisateur";
-        const role = (user.user_metadata?.role as string) || "client";
-
-        const { data: pkg } = await supabase
-          .from("packages")
-          .select("client_id")
-          .eq("id", packageId)
-          .single();
-
-        if (role === "admin" && pkg?.client_id) {
-          await notifyNewMessage(pkg.client_id, packageId, senderName);
-        } else if (role === "client") {
-          const { data: admins } = await supabase
-            .from("profiles")
-            .select("id")
-            .eq("role", "admin");
-          if (admins && admins.length > 0) {
-            await Promise.all(
-              admins.map((a: any) =>
-                notifyNewMessage(a.id, packageId, senderName)
-              )
-            );
-          }
-        }
-      } catch (err) {
-        // Échec de notification non bloquant
-      }
+      // Notifications automatiques désormais gérées côté base via triggers
     }
   };
 
@@ -198,15 +181,50 @@ export function Chat({ packageId }: ChatProps) {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-full">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+      <div className="flex flex-col h-full bg-gray-50">
+        <div className="flex-1 overflow-y-auto p-4 space-y-4">
+          {[...Array(6)].map((_, i) => (
+            <div
+              key={i}
+              className={`flex ${i % 2 ? "justify-end" : "justify-start"}`}
+            >
+              <div
+                className={`max-w-xs lg:max-w-md px-4 py-3 rounded-lg ${
+                  i % 2 ? "bg-blue-600" : "bg-white border border-gray-200"
+                }`}
+              >
+                <div
+                  className={`animate-pulse ${
+                    i % 2 ? "bg-blue-500" : "bg-gray-200"
+                  } h-4 w-40 rounded`}
+                ></div>
+                <div
+                  className={`animate-pulse ${
+                    i % 2 ? "bg-blue-500" : "bg-gray-200"
+                  } h-4 w-24 rounded mt-2`}
+                ></div>
+              </div>
+            </div>
+          ))}
+          {timeoutError && (
+            <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+              <div className="flex">
+                <AlertCircle className="h-5 w-5 text-red-400 mt-0.5" />
+                <div className="ml-3">
+                  <h3 className="text-sm font-medium text-red-800">Erreur</h3>
+                  <p className="mt-2 text-sm text-red-700">{timeoutError}</p>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
       </div>
     );
   }
 
   return (
     <div className="flex flex-col h-full bg-gray-50">
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
+      <div className="flex-1 overflow-y-auto p-4 space-y-4 pb-24">
         {messages.length === 0 ? (
           <div className="text-center text-gray-500 mt-8">
             <p>Aucun message pour le moment</p>
@@ -258,20 +276,23 @@ export function Chat({ packageId }: ChatProps) {
         <div ref={messagesEndRef} />
       </div>
 
-      <form onSubmit={sendMessage} className="p-4 bg-white border-t">
+      <form
+        onSubmit={sendMessage}
+        className="p-4 bg-white border-t sticky bottom-0 z-50 safe-bottom"
+      >
         <div className="flex space-x-2">
           <input
             type="text"
             value={newMessage}
             onChange={(e) => setNewMessage(e.target.value)}
             placeholder="Tapez votre message..."
-            className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="flex-1 px-3 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             disabled={!user}
           />
           <button
             type="submit"
             disabled={!newMessage.trim() || !user}
-            className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
+            className="bg-blue-600 text-white px-5 py-3 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
           >
             <Send className="h-4 w-4" />
           </button>

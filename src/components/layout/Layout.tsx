@@ -1,17 +1,11 @@
 import { useState } from "react";
 import { Outlet, NavLink, useNavigate, useLocation } from "react-router-dom";
 import { useAuthStore } from "../../store/authStore";
-import {
-  LayoutDashboard,
-  Bell,
-  User,
-  LogOut,
-  Menu,
-  X,
-  Package,
-} from "lucide-react";
+import { LogOut, Menu, X, Package } from "lucide-react";
 import clsx from "clsx";
+import { getNavItems } from "./nav";
 import { BottomNav } from "./BottomNav";
+import { InstallPrompt } from "../pwa/InstallPrompt";
 
 export function Layout() {
   const navigate = useNavigate();
@@ -24,23 +18,7 @@ export function Layout() {
     navigate("/login");
   };
 
-  const navigation = [
-    {
-      name: "Tableau de bord",
-      href: role === "admin" ? "/admin/dashboard" : "/client/dashboard",
-      icon: LayoutDashboard,
-    },
-    {
-      name: "Notifications",
-      href: role === "admin" ? "/admin/notifications" : "/client/notifications",
-      icon: Bell,
-    },
-    {
-      name: "Profil",
-      href: "/profile",
-      icon: User,
-    },
-  ];
+  const navigation = getNavItems(role as any);
 
   return (
     <div className="min-h-screen bg-gray-50 flex">
@@ -133,7 +111,7 @@ export function Layout() {
       {/* Main Content Wrapper */}
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         {/* Mobile Header */}
-        <header className="lg:hidden bg-white shadow-sm border-b border-gray-200 h-16 flex items-center px-4 justify-between">
+        <header className="lg:hidden bg-white mobile-blur border-b border-gray-200 h-14 flex items-center px-4 justify-between">
           <div className="flex items-center">
             <button
               onClick={() => setIsSidebarOpen(true)}
@@ -141,8 +119,9 @@ export function Layout() {
             >
               <Menu className="h-6 w-6" />
             </button>
-            <span className="ml-3 text-lg font-semibold text-gray-900">
-              ChineLivre
+            <span className="ml-3 text-base font-semibold text-gray-900">
+              {navigation.find((n) => n.href === location.pathname)?.name ||
+                "ChineLivre"}
             </span>
           </div>
         </header>
@@ -152,6 +131,7 @@ export function Layout() {
           <Outlet />
         </main>
         <BottomNav />
+        <InstallPrompt />
       </div>
     </div>
   );

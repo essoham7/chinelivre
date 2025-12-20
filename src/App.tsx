@@ -13,6 +13,7 @@ import NotificationForm from "./components/admin/NotificationForm";
 import NotificationSend from "./components/admin/NotificationSend";
 import ClientNotifications from "./components/notifications/ClientNotifications";
 import { Layout } from "./components/layout/Layout";
+import { Splash } from "./components/pwa/Splash";
 
 function App() {
   const { user, role, loading, checkUser } = useAuthStore();
@@ -37,6 +38,7 @@ function App() {
   return (
     <BrowserRouter>
       <div className="min-h-screen bg-gray-50">
+        <Splash />
         <Routes>
           <Route
             path="/"

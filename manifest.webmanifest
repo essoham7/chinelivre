@@ -1,0 +1,25 @@
+{
+  "name": "ChineLivre",
+  "short_name": "ChineLivre",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "description": "Suivi des colis Chine → Afrique",
+  "lang": "fr-FR",
+  "theme_color": "#2563eb",
+  "background_color": "#ffffff",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    }
+  ]
+}

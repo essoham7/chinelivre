@@ -10,23 +10,31 @@ import { useNavigate } from "react-router-dom";
 
 export function AdminDashboard() {
   const navigate = useNavigate();
-  const { packages, loading, fetchPackages } = usePackageStore();
+  const { packages, loading, fetchPackages, archiveOldPickedUpPackages } =
+    usePackageStore();
   const [showForm, setShowForm] = useState(false);
   const [selectedPackage, setSelectedPackage] = useState<Package | null>(null);
   const [showChat, setShowChat] = useState(false);
+  const [tab, setTab] = useState<"active" | "archived">("active");
 
   useEffect(() => {
-    fetchPackages();
+    (async () => {
+      await archiveOldPickedUpPackages();
+      await fetchPackages();
+    })();
   }, [fetchPackages]);
 
+  const activePackages = packages.filter((p: any) => !p.archived);
+  const archivedPackages = packages.filter((p: any) => p.archived);
   const stats = {
-    total: packages.length,
-    received: packages.filter((p) => p.status === "received_china").length,
-    inTransit: packages.filter((p) => p.status === "in_transit").length,
-    arrived: packages.filter((p) => p.status === "arrived_africa").length,
-    available: packages.filter((p) => p.status === "available_warehouse")
+    total: activePackages.length,
+    received: activePackages.filter((p) => p.status === "received_china")
       .length,
-    pickedUp: packages.filter((p) => p.status === "picked_up").length,
+    inTransit: activePackages.filter((p) => p.status === "in_transit").length,
+    arrived: activePackages.filter((p) => p.status === "arrived_africa").length,
+    available: activePackages.filter((p) => p.status === "available_warehouse")
+      .length,
+    pickedUp: activePackages.filter((p) => p.status === "picked_up").length,
   };
 
   const handlePackageCreated = () => {
@@ -120,34 +128,63 @@ export function AdminDashboard() {
 
       <div className="bg-white rounded-lg shadow">
         <div className="px-6 py-4 border-b border-gray-200">
-          <h2 className="text-xl font-semibold text-gray-900 flex items-center">
-            <PackageIcon className="h-5 w-5 mr-2" />
-            Liste des colis ({packages.length})
-          </h2>
+          <div className="flex items-center justify-between">
+            <h2 className="text-xl font-semibold text-gray-900 flex items-center">
+              <PackageIcon className="h-5 w-5 mr-2" />
+              {tab === "active"
+                ? `Liste des colis (${activePackages.length})`
+                : `Colis archivés (${archivedPackages.length})`}
+            </h2>
+            <div className="flex space-x-4">
+              <button
+                onClick={() => setTab("active")}
+                className={`px-3 py-1 rounded-md text-sm ${
+                  tab === "active"
+                    ? "bg-blue-600 text-white"
+                    : "bg-gray-100 text-gray-700"
+                }`}
+              >
+                Actifs
+              </button>
+              <button
+                onClick={() => setTab("archived")}
+                className={`px-3 py-1 rounded-md text-sm ${
+                  tab === "archived"
+                    ? "bg-blue-600 text-white"
+                    : "bg-gray-100 text-gray-700"
+                }`}
+              >
+                Colis archivés
+              </button>
+            </div>
+          </div>
         </div>
 
         <div className="divide-y divide-gray-200">
-          {packages.length === 0 ? (
+          {(tab === "active" ? activePackages : archivedPackages).length ===
+          0 ? (
             <div className="p-8 text-center text-gray-500">
               <PackageIcon className="h-12 w-12 mx-auto mb-4 text-gray-300" />
-              <p>Aucun colis trouvé</p>
+              <p>Aucun colis {tab === "active" ? "actif" : "archivé"} trouvé</p>
               <p className="text-sm">Commencez par créer votre premier colis</p>
             </div>
           ) : (
-            packages.map((pkg) => (
-              <PackageCard
-                key={pkg.id}
-                package={pkg}
-                onEdit={() => {
-                  setSelectedPackage(pkg);
-                  setShowForm(true);
-                }}
-                onChat={() => {
-                  setSelectedPackage(pkg);
-                  setShowChat(true);
-                }}
-              />
-            ))
+            (tab === "active" ? activePackages : archivedPackages).map(
+              (pkg) => (
+                <PackageCard
+                  key={pkg.id}
+                  package={pkg}
+                  onEdit={() => {
+                    setSelectedPackage(pkg);
+                    setShowForm(true);
+                  }}
+                  onChat={() => {
+                    setSelectedPackage(pkg);
+                    setShowChat(true);
+                  }}
+                />
+              )
+            )
           )}
         </div>
       </div>

@@ -84,15 +84,7 @@ export function PackageForm({
         // Mise à jour du colis
         await updatePackage(pkg.id, formData);
 
-        // Si le statut a changé, notifier le client
-        if (pkg.status !== formData.status && formData.client_id) {
-          await notifyStatusUpdated(
-            formData.client_id,
-            pkg.id,
-            formData.tracking_number!,
-            formData.status!
-          );
-        }
+        // La notification de mise à jour de statut est gérée côté base via trigger
       } else {
         // Création d'un nouveau colis
         const created = await createPackage(formData as PackageInsert);

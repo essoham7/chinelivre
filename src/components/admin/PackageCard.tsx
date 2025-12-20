@@ -8,6 +8,7 @@ import {
   CheckCircle,
   User,
 } from "lucide-react";
+import { buildWhatsappUrl } from "../../utils/whatsapp";
 
 interface PackageCardProps {
   package: Package;
@@ -79,10 +80,28 @@ export function PackageCard({
 
           <p className="text-gray-600 mb-3">{pkg.content}</p>
 
+          {((pkg as any).photos && (pkg as any).photos.length > 0) && (
+            <div className="mb-3 grid grid-cols-4 gap-2">
+              {((pkg as any).photos as any[]).slice(0, 4).map((ph: any, idx: number) => (
+                <img
+                  key={idx}
+                  src={ph.url || ''}
+                  alt={`Photo ${idx + 1}`}
+                  className="w-full h-16 object-cover rounded border"
+                />
+              ))}
+            </div>
+          )}
+
           <div className="grid grid-cols-2 gap-4 text-sm text-gray-500">
             <div className="flex items-center">
               <User className="h-4 w-4 mr-1" />
-              <span>Client: {(pkg as any).client?.email || "Non assigné"}</span>
+              <span>
+                Client: {((pkg as any).client?.first_name || "").trim()} {((pkg as any).client?.last_name || "").trim()}
+                {((pkg as any).client?.company && ((pkg as any).client?.company as string).trim().length > 0)
+                  ? ` (${(pkg as any).client?.company})`
+                  : ""}
+              </span>
             </div>
             <div>
               <span>Reçu le: {formatDate(pkg.received_china_at)}</span>
@@ -122,6 +141,28 @@ export function PackageCard({
           >
             <MessageCircle className="h-4 w-4" />
           </button>
+          {((pkg as any).client?.phone) && (
+            <a
+              href={buildWhatsappUrl(
+                (pkg as any).client.phone,
+                `Bonjour, concernant le colis ${pkg.tracking_number}`
+              )}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="p-2 text-green-500 hover:text-green-600 transition-colors"
+              title="WhatsApp"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="currentColor"
+                className="h-4 w-4"
+              >
+                <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.472-.148-.67.149-.198.297-.767.967-.94 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.131-.606.134-.133.297-.347.446-.521.149-.173.198-.297.297-.495.099-.198.05-.372-.025-.521-.074-.149-.669-1.611-.916-2.206-.242-.579-.487-.5-.67-.51-.173-.01-.372-.012-.571-.012-.198 0-.521.074-.794.372-.273.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.1 3.206 5.077 4.492.709.306 1.262.489 1.694.626.712.226 1.36.194 1.871.118.57-.085 1.758-.718 2.006-1.412.248-.694.248-1.289.173-1.412-.074-.123-.272-.198-.57-.347z" />
+                <path d="M12.004 2.003c-5.5 0-9.997 4.497-9.997 9.997 0 1.761.468 3.412 1.284 4.856l-1.36 4.972 5.09-1.335c1.39.76 2.972 1.191 4.683 1.191 5.5 0 9.997-4.497 9.997-9.997s-4.497-9.997-9.997-9.997zm0 18.19c-1.516 0-2.922-.39-4.152-1.07l-.297-.173-3.018.792.808-2.96-.198-.306c-.792-1.255-1.213-2.708-1.213-4.2 0-4.632 3.769-8.401 8.401-8.401 4.632 0 8.401 3.769 8.401 8.401 0 4.632-3.769 8.401-8.401 8.401z" />
+              </svg>
+            </a>
+          )}
         </div>
       </div>
     </div>

@@ -11,6 +11,7 @@ import {
   Gift,
   AlertTriangle,
 } from "lucide-react";
+import { SkeletonCard } from "../ui/Skeleton";
 
 const ClientNotifications: React.FC = () => {
   const {
@@ -24,6 +25,7 @@ const ClientNotifications: React.FC = () => {
 
   const [userId, setUserId] = useState<string | null>(null);
   const [filter, setFilter] = useState<"all" | "unread" | "read">("all");
+  const [timeoutError, setTimeoutError] = useState<string | null>(null);
 
   useEffect(() => {
     const getUser = async () => {
@@ -35,6 +37,16 @@ const ClientNotifications: React.FC = () => {
     };
     getUser();
   }, []);
+
+  useEffect(() => {
+    const t = setTimeout(() => {
+      if (loading)
+        setTimeoutError(
+          "Le chargement prend trop de temps. Veuillez réessayer."
+        );
+    }, 30000);
+    return () => clearTimeout(t);
+  }, [loading]);
 
   useEffect(() => {
     if (!userId) return;
@@ -139,8 +151,21 @@ const ClientNotifications: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      <div className="max-w-4xl mx-auto space-y-4">
+        {[...Array(6)].map((_, i) => (
+          <SkeletonCard key={i} />
+        ))}
+        {timeoutError && (
+          <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+            <div className="flex">
+              <AlertCircle className="h-5 w-5 text-red-400 mt-0.5" />
+              <div className="ml-3">
+                <h3 className="text-sm font-medium text-red-800">Erreur</h3>
+                <p className="mt-2 text-sm text-red-700">{timeoutError}</p>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     );
   }
@@ -233,90 +258,55 @@ const ClientNotifications: React.FC = () => {
           </p>
         </div>
       ) : (
-        <div className="space-y-4">
+        <div className="divide-y divide-gray-200 rounded-lg overflow-hidden bg-white border border-gray-200">
           {filteredNotifications.map((notification) => (
-            <div
+            <button
               key={notification.id}
-              className={`bg-white rounded-lg shadow-sm border-l-4 ${getNotificationColor(
-                notification.notification?.type || "info"
-              )} ${
-                notification.status === "unread"
-                  ? "border-r-4 border-r-blue-200"
-                  : ""
-              } transition-all hover:shadow-md`}
+              onClick={() =>
+                notification.status === "unread" &&
+                handleMarkAsRead(notification.id)
+              }
+              className="w-full text-left px-4 py-3 active:bg-gray-50"
             >
-              <div className="p-6">
-                <div className="flex items-start space-x-4">
-                  <div className="flex-shrink-0">
-                    {getNotificationIcon(
-                      notification.notification?.type || "info"
-                    )}
+              <div className="flex items-center gap-3">
+                <div className="flex-shrink-0">
+                  {getNotificationIcon(
+                    notification.notification?.type || "info"
+                  )}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[15px] font-semibold text-gray-900 truncate">
+                      {notification.notification?.title}
+                    </span>
+                    <span className="text-xs text-gray-500 ml-3">
+                      {formatDate(notification.created_at)}
+                    </span>
                   </div>
-
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between">
-                      <h3 className="text-lg font-medium text-gray-900">
-                        {notification.notification?.title}
-                      </h3>
-
-                      <div className="flex items-center space-x-2">
-                        <span
-                          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getPriorityBadge(
-                            notification.notification?.priority || "medium"
-                          )}`}
-                        >
-                          {notification.notification?.priority === "high"
-                            ? "Haute"
-                            : notification.notification?.priority === "medium"
-                            ? "Moyenne"
-                            : "Faible"}
-                        </span>
-
-                        {notification.status === "unread" && (
-                          <button
-                            onClick={() => handleMarkAsRead(notification.id)}
-                            className="text-blue-600 hover:text-blue-800 text-sm font-medium"
-                          >
-                            Marquer comme lu
-                          </button>
-                        )}
-                      </div>
-                    </div>
-
-                    <p className="mt-2 text-gray-700">
-                      {notification.notification?.content}
-                    </p>
-
-                    <div className="mt-4 flex items-center justify-between">
-                      <div className="flex items-center space-x-4 text-sm text-gray-500">
-                        <span className="flex items-center">
-                          <Clock className="h-4 w-4 mr-1" />
-                          {formatDate(notification.created_at)}
-                        </span>
-
-                        <span className="flex items-center">
-                          <Tag className="h-4 w-4 mr-1" />
-                          {notification.notification?.type === "info"
-                            ? "Information"
-                            : notification.notification?.type === "promotion"
-                            ? "Promotion"
-                            : notification.notification?.type === "urgent"
-                            ? "Urgente"
-                            : "Mise à jour"}
-                        </span>
-                      </div>
-
-                      {notification.status === "read" && (
-                        <div className="flex items-center text-sm text-gray-500">
-                          <Check className="h-4 w-4 mr-1" />
-                          Lu
-                        </div>
-                      )}
-                    </div>
+                  <p className="text-[13px] text-gray-700 mt-0.5 line-clamp-2">
+                    {notification.notification?.content}
+                  </p>
+                  <div className="mt-1 flex items-center gap-2">
+                    <span
+                      className={`px-2 py-0.5 rounded-full text-[11px] ${getPriorityBadge(
+                        notification.notification?.priority || "medium"
+                      )}`}
+                    >
+                      {notification.notification?.priority || "medium"}
+                    </span>
+                    <span className="flex items-center text-[11px] text-gray-500">
+                      <Tag className="h-3 w-3 mr-1" />
+                      {notification.notification?.type || "info"}
+                    </span>
+                    {notification.status === "read" && (
+                      <span className="flex items-center text-[11px] text-gray-500">
+                        <Check className="h-3 w-3 mr-1" /> Lu
+                      </span>
+                    )}
                   </div>
                 </div>
               </div>
-            </div>
+            </button>
           ))}
         </div>
       )}

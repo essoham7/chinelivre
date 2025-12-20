@@ -6,6 +6,8 @@ import { ClientPackageCard } from "./ClientPackageCard";
 import { PackageDetail } from "./PackageDetail";
 import { Package as PackageIcon, Bell } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { supabase } from "../../lib/supabase";
+import { SkeletonCard, SkeletonLine } from "../ui/Skeleton";
 
 export function ClientDashboard() {
   const navigate = useNavigate();
@@ -13,12 +15,42 @@ export function ClientDashboard() {
   const { packages, loading, fetchPackages } = usePackageStore();
   const [selectedPackage, setSelectedPackage] = useState<Package | null>(null);
   const [showDetail, setShowDetail] = useState(false);
+  const [timeoutError, setTimeoutError] = useState<string | null>(null);
+  const [displayName, setDisplayName] = useState<string>("");
 
   useEffect(() => {
     if (user) {
       fetchPackages(user.id);
     }
   }, [user, fetchPackages]);
+
+  useEffect(() => {
+    const loadName = async () => {
+      if (!user) return;
+      const alias = user.email?.split("@")[0] || "";
+      const { data } = await supabase
+        .from("profiles")
+        .select("first_name,last_name")
+        .eq("id", user.id)
+        .single();
+      const full = [data?.first_name, data?.last_name]
+        .filter(Boolean)
+        .join(" ")
+        .trim();
+      setDisplayName(full || alias);
+    };
+    loadName();
+  }, [user]);
+
+  useEffect(() => {
+    const t = setTimeout(() => {
+      if (loading)
+        setTimeoutError(
+          "Le chargement prend trop de temps. Veuillez réessayer."
+        );
+    }, 30000);
+    return () => clearTimeout(t);
+  }, [loading]);
 
   const handlePackageClick = (pkg: Package) => {
     setSelectedPackage(pkg);
@@ -32,8 +64,27 @@ export function ClientDashboard() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+      <div className="p-6">
+        <div className="mb-8">
+          <SkeletonLine width="w-1/3" />
+          <SkeletonLine width="w-1/2" className="mt-2" />
+        </div>
+        <div className="space-y-2">
+          {[...Array(5)].map((_, i) => (
+            <SkeletonCard key={i} />
+          ))}
+        </div>
+        {timeoutError && (
+          <div className="mt-6 bg-red-50 border border-red-200 rounded-lg p-4">
+            <div className="flex">
+              <Bell className="h-5 w-5 text-red-400 mt-0.5" />
+              <div className="ml-3">
+                <h3 className="text-sm font-medium text-red-800">Erreur</h3>
+                <p className="mt-2 text-sm text-red-700">{timeoutError}</p>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     );
   }
@@ -50,7 +101,7 @@ export function ClientDashboard() {
         <div className="flex justify-between items-center mb-6">
           <div>
             <h1 className="text-3xl font-bold text-gray-900">
-              Bonjour {user?.email?.split("@")[0]}!
+              Bonjour {displayName}!
             </h1>
             <p className="text-gray-600">Suivez vos colis en temps réel</p>
           </div>

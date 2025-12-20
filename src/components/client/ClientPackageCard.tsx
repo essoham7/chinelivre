@@ -72,6 +72,19 @@ export function ClientPackageCard({
 
       <p className="text-gray-600 mb-4">{pkg.content}</p>
 
+      {((pkg as any).photos && (pkg as any).photos.length > 0) && (
+        <div className="mb-3 grid grid-cols-3 gap-2">
+          {((pkg as any).photos as any[]).slice(0, 3).map((ph: any, idx: number) => (
+            <img
+              key={idx}
+              src={ph.url || ''}
+              alt={`Photo ${idx + 1}`}
+              className="w-full h-16 object-cover rounded border"
+            />
+          ))}
+        </div>
+      )}
+
       <div className="flex justify-between items-center text-sm text-gray-500">
         <span>Reçu le: {formatDate(pkg.received_china_at)}</span>
         {pkg.estimated_arrival && (

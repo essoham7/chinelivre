@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useAuthStore } from "../../store/authStore";
 import { UserRole } from "../../lib/supabase";
+import { usePwaStore } from "../../store/pwaStore";
 
 interface LoginFormProps {
   onSuccess?: () => void;
@@ -19,6 +20,7 @@ export function LoginForm({
   const [error, setError] = useState<string | null>(null);
 
   const { signIn, signUp } = useAuthStore();
+  const pwa = usePwaStore();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -30,6 +32,9 @@ export function LoginForm({
         await signUp(email, password, role);
       } else {
         await signIn(email, password);
+      }
+      if (pwa.deferredPrompt) {
+        pwa.requestShow();
       }
       onSuccess?.();
     } catch (err) {
