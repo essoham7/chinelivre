@@ -575,8 +575,18 @@ export const useNotificationStore = create<NotificationStore>((set) => ({
       .on(
         "postgres_changes",
         { event: "INSERT", schema: "public", table: "user_notifications" },
-        (payload) => {
-          callback(payload.new as UserNotification);
+        async (payload) => {
+          const row = payload.new as UserNotification;
+          const { data: notif } = await supabase
+            .from("notifications")
+            .select("*")
+            .eq("id", row.notification_id)
+            .single();
+          if (notif && notif.type === "new_message") {
+            setTimeout(() => callback(row), 60_000);
+          } else {
+            callback(row);
+          }
         }
       )
       .subscribe();
