@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { supabase } from "../../lib/supabase";
 import { Message } from "../../lib/supabase";
 import { useAuthStore } from "../../store/authStore";
-import { Send, Check, CheckCheck } from "lucide-react";
+import { Send, Check, CheckCheck, AlertCircle } from "lucide-react";
 import { notifyNewMessage } from "../../hooks/useNotifications";
 
 interface ChatProps {

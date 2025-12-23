@@ -22,10 +22,14 @@ export function AdminDashboard() {
       await archiveOldPickedUpPackages();
       await fetchPackages();
     })();
-  }, [fetchPackages]);
+  }, [fetchPackages, archiveOldPickedUpPackages]);
 
-  const activePackages = packages.filter((p: any) => !p.archived);
-  const archivedPackages = packages.filter((p: any) => p.archived);
+  type PackageListItem = Package & {
+    archived?: boolean;
+  };
+  const pkgList = packages as unknown as PackageListItem[];
+  const activePackages = pkgList.filter((p) => !p.archived);
+  const archivedPackages = pkgList.filter((p) => p.archived);
   const stats = {
     total: activePackages.length,
     received: activePackages.filter((p) => p.status === "received_china")
@@ -39,11 +43,6 @@ export function AdminDashboard() {
 
   const handlePackageCreated = () => {
     setShowForm(false);
-    setSelectedPackage(null);
-    fetchPackages();
-  };
-
-  const handlePackageUpdated = () => {
     setSelectedPackage(null);
     fetchPackages();
   };

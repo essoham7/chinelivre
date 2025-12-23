@@ -2,12 +2,27 @@ import { create } from "zustand";
 import { supabase } from "../lib/supabase";
 import { Package, PackageInsert } from "../lib/supabase";
 
+type ExtendedPackage = Package & {
+  client: {
+    email: string | null;
+    phone: string | null;
+    first_name?: string | null;
+    last_name?: string | null;
+    company?: string | null;
+  };
+  photos: Array<{
+    storage_path: string;
+    is_primary: boolean;
+    url: string | null;
+  }>;
+};
+
 interface PackageState {
-  packages: Package[];
+  packages: ExtendedPackage[];
   loading: boolean;
   error: string | null;
   fetchPackages: (clientId?: string) => Promise<void>;
-  fetchPackage: (id: string) => Promise<Package | null>;
+  fetchPackage: (id: string) => Promise<ExtendedPackage | null>;
   createPackage: (packageData: PackageInsert) => Promise<Package>;
   updatePackage: (id: string, updates: Partial<PackageInsert>) => Promise<void>;
   deletePackage: (id: string) => Promise<void>;
@@ -53,10 +68,16 @@ export const usePackageStore = create<PackageState>((set, get) => ({
       return;
     }
 
+    type PackageRow = {
+      id: string;
+      client_id: string | null;
+      archived?: boolean;
+    };
+    const rows = (data || []) as unknown as Package[];
     const clientIds = Array.from(
-      new Set(data.map((p: any) => p.client_id).filter(Boolean))
-    );
-    const packageIds = (data as any[]).map((p: any) => p.id);
+      new Set(rows.map((p) => p.client_id).filter(Boolean))
+    ) as string[];
+    const packageIds = rows.map((p) => p.id);
     let profilesMap: Record<
       string,
       {
@@ -74,8 +95,17 @@ export const usePackageStore = create<PackageState>((set, get) => ({
         .select("id,email,phone,first_name,last_name,company")
         .in("id", clientIds);
       if (profilesData) {
+        type ProfileRow = {
+          id: string;
+          email: string | null;
+          phone?: string | null;
+          first_name?: string | null;
+          last_name?: string | null;
+          company?: string | null;
+        };
+        const prows = profilesData as unknown as ProfileRow[];
         profilesMap = Object.fromEntries(
-          (profilesData as any[]).map((pr) => [
+          prows.map((pr) => [
             pr.id,
             {
               email: pr.email,
@@ -90,7 +120,7 @@ export const usePackageStore = create<PackageState>((set, get) => ({
     }
 
     // Load photos for all packages and map Cloudinary URLs
-    let photosMap: Record<
+    const photosMap: Record<
       string,
       Array<{ storage_path: string; is_primary: boolean }>
     > = {};
@@ -100,22 +130,26 @@ export const usePackageStore = create<PackageState>((set, get) => ({
         .select("package_id,storage_path,is_primary")
         .in("package_id", packageIds);
       if (photosData) {
-        for (const ph of photosData as any[]) {
+        type PhotoRow = {
+          package_id: string;
+          storage_path: string;
+          is_primary?: boolean;
+        };
+        const pr = photosData as unknown as PhotoRow[];
+        pr.forEach((ph) => {
           const arr = photosMap[ph.package_id] || [];
           arr.push({
             storage_path: ph.storage_path,
             is_primary: !!ph.is_primary,
           });
           photosMap[ph.package_id] = arr;
-        }
+        });
       }
     }
 
     const cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME || "";
-    const { cloudinaryUrlFromPublicId } = (await import(
-      "../utils/cloudinary"
-    )) as any;
-    const withClient = (data as any[]).map((p) => {
+    const { cloudinaryUrlFromPublicId } = await import("../utils/cloudinary");
+    const withClient: ExtendedPackage[] = rows.map((p) => {
       const photoEntries = photosMap[p.id] || [];
       const photos = photoEntries.map((ph) => ({
         storage_path: ph.storage_path,
@@ -132,7 +166,7 @@ export const usePackageStore = create<PackageState>((set, get) => ({
           company: null,
         },
         photos,
-      };
+      } as ExtendedPackage;
     });
 
     set({ packages: withClient, loading: false });
@@ -164,13 +198,14 @@ export const usePackageStore = create<PackageState>((set, get) => ({
         .eq("id", id)
         .single();
       if (!fallback.error) {
-        data = fallback.data as any;
+        data = fallback.data as unknown as Record<string, unknown>;
         const photosRes = await supabase
           .from("package_photos")
           .select("*")
           .eq("package_id", id);
-        (data as any).photos = photosRes.data || [];
-        error = null as any;
+        (data as Record<string, unknown>).photos = (photosRes.data ||
+          []) as unknown as object[];
+        error = null;
       }
     }
 
@@ -186,32 +221,46 @@ export const usePackageStore = create<PackageState>((set, get) => ({
       last_name: null as string | null,
       company: null as string | null,
     };
-    if ((data as any)?.client_id) {
+    const d = data as unknown as { client_id?: string };
+    if (d?.client_id) {
       const { data: profile } = await supabase
         .from("profiles")
         .select("email,phone,first_name,last_name,company")
-        .eq("id", (data as any).client_id)
+        .eq("id", d.client_id)
         .single();
-      if (profile)
-        client = {
-          email: (profile as any).email,
-          phone: (profile as any).phone || null,
-          first_name: (profile as any).first_name || null,
-          last_name: (profile as any).last_name || null,
-          company: (profile as any).company || null,
+      if (profile) {
+        const pr = profile as unknown as {
+          email: string | null;
+          phone?: string | null;
+          first_name?: string | null;
+          last_name?: string | null;
+          company?: string | null;
         };
+        client = {
+          email: pr.email,
+          phone: pr.phone || null,
+          first_name: pr.first_name || null,
+          last_name: pr.last_name || null,
+          company: pr.company || null,
+        };
+      }
     }
     // Map photos to include Cloudinary URL
     const cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME || "";
-    const { cloudinaryUrlFromPublicId } = (await import(
-      "../utils/cloudinary"
-    )) as any;
-    const photos = ((data as any)?.photos || []).map((ph: any) => ({
-      ...ph,
+    const { cloudinaryUrlFromPublicId } = await import("../utils/cloudinary");
+    type PhotoRow2 = { storage_path: string } & Record<string, unknown>;
+    const dr = data as unknown as { photos?: PhotoRow2[] };
+    const photoRows = (dr.photos || []) as PhotoRow2[];
+    const photos = photoRows.map((ph) => ({
+      ...(ph as unknown as Record<string, unknown>),
       url: cloudName ? cloudinaryUrlFromPublicId(ph.storage_path) : null,
     }));
 
-    return { ...(data as any), client, photos } as any;
+    return {
+      ...(data as unknown as Package),
+      client,
+      photos,
+    } as ExtendedPackage;
   },
 
   createPackage: async (packageData: PackageInsert) => {

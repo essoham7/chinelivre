@@ -3,10 +3,7 @@ import { usePackageStore } from "../../store/packageStore";
 import { Package, PackageInsert } from "../../lib/supabase";
 import { supabase } from "../../lib/supabase";
 import { PhotoUpload } from "../photos/PhotoUpload";
-import {
-  notifyPackageCreated,
-  notifyStatusUpdated,
-} from "../../hooks/useNotifications";
+import { notifyPackageCreated } from "../../hooks/useNotifications";
 import { X } from "lucide-react";
 
 interface PackageFormProps {
@@ -35,9 +32,7 @@ export function PackageForm({
   );
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [uploadedPhotos, setUploadedPhotos] = useState<
-    Array<{ path: string; url: string }>
-  >([]);
+  // Previews upload not persisted here; upload component handles persistence
 
   const [searchQuery, setSearchQuery] = useState("");
   const [showSuggestions, setShowSuggestions] = useState(false);
@@ -123,11 +118,7 @@ export function PackageForm({
     }));
   };
 
-  const handlePhotosUploaded = (
-    photos: Array<{ path: string; url: string }>
-  ) => {
-    setUploadedPhotos((prev) => [...prev, ...photos]);
-  };
+  const noopPhotosUploaded = () => {};
 
   const handleClientSelect = (client: { id: string; email: string }) => {
     setFormData((prev) => ({ ...prev, client_id: client.id }));
@@ -325,7 +316,7 @@ export function PackageForm({
             </label>
             <PhotoUpload
               packageId={pkg?.id || "temp"}
-              onPhotosUploaded={handlePhotosUploaded}
+              onPhotosUploaded={noopPhotosUploaded}
               maxPhotos={5}
             />
           </div>

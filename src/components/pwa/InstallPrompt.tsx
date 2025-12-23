@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import { usePwaStore } from '../../store/pwaStore'
+import { usePwaStore, BeforeInstallPromptEvent } from '../../store/pwaStore'
 import { Download } from 'lucide-react'
 
 export function InstallPrompt({ triggerOnMount = false }: { triggerOnMount?: boolean }) {
@@ -10,9 +10,9 @@ export function InstallPrompt({ triggerOnMount = false }: { triggerOnMount?: boo
   }, [triggerOnMount, deferredPrompt, requestShow])
 
   const handleInstall = async () => {
-    const e: any = deferredPrompt
+    const e: BeforeInstallPromptEvent | null = deferredPrompt
     if (!e) return
-    const res = await e.prompt()
+    await e.prompt()
     clear()
   }
 

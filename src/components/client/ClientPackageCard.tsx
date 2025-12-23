@@ -10,6 +10,14 @@ export function ClientPackageCard({
   package: pkg,
   onClick,
 }: ClientPackageCardProps) {
+  type PackageListItem = Package & {
+    photos?: Array<{
+      url: string | null;
+      storage_path: string;
+      is_primary: boolean;
+    }>;
+  };
+  const p = pkg as unknown as PackageListItem;
   const getStatusBadge = (status: string) => {
     const statusConfig = {
       received_china: {
@@ -72,12 +80,12 @@ export function ClientPackageCard({
 
       <p className="text-gray-600 mb-4">{pkg.content}</p>
 
-      {((pkg as any).photos && (pkg as any).photos.length > 0) && (
+      {p.photos && p.photos.length > 0 && (
         <div className="mb-3 grid grid-cols-3 gap-2">
-          {((pkg as any).photos as any[]).slice(0, 3).map((ph: any, idx: number) => (
+          {p.photos.slice(0, 3).map((ph, idx) => (
             <img
               key={idx}
-              src={ph.url || ''}
+              src={ph.url || ""}
               alt={`Photo ${idx + 1}`}
               className="w-full h-16 object-cover rounded border"
             />

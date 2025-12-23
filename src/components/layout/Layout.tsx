@@ -3,7 +3,7 @@ import { Outlet, NavLink, useNavigate, useLocation } from "react-router-dom";
 import { useAuthStore } from "../../store/authStore";
 import { LogOut, Menu, X, Package } from "lucide-react";
 import clsx from "clsx";
-import { getNavItems } from "./nav";
+import { getNavItems, Role } from "./nav";
 import { BottomNav } from "./BottomNav";
 import { InstallPrompt } from "../pwa/InstallPrompt";
 
@@ -18,7 +18,8 @@ export function Layout() {
     navigate("/login");
   };
 
-  const navigation = getNavItems(role as any);
+  const roleKey: Role = role === "admin" ? "admin" : "client";
+  const navigation = getNavItems(roleKey);
 
   return (
     <div className="min-h-screen bg-gray-50 flex">

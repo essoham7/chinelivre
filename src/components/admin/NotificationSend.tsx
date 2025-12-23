@@ -7,12 +7,9 @@ import {
   Send,
   Filter,
   Users,
-  Mail,
   Calendar,
   DollarSign,
   MapPin,
-  Search,
-  Check,
   AlertCircle,
 } from "lucide-react";
 
@@ -31,12 +28,27 @@ const NotificationSend: React.FC = () => {
     setClientFilters,
   } = useNotificationStore();
 
-  const [localFilters, setLocalFilters] = useState({
+  type LocalFilters = {
+    name: string;
+    subscriptionType: string;
+    location: string;
+    minSpent: number | undefined;
+    maxSpent: number | undefined;
+    dateFrom: string;
+    dateTo: string;
+  };
+  const [localFilters, setLocalFilters] = useState<LocalFilters>({
     name: clientFilters.name || "",
     subscriptionType: clientFilters.subscriptionType || "",
     location: clientFilters.location || "",
-    minSpent: clientFilters.minSpent || "",
-    maxSpent: clientFilters.maxSpent || "",
+    minSpent:
+      typeof clientFilters.minSpent === "number"
+        ? clientFilters.minSpent
+        : undefined,
+    maxSpent:
+      typeof clientFilters.maxSpent === "number"
+        ? clientFilters.maxSpent
+        : undefined,
     dateFrom: clientFilters.dateFrom || "",
     dateTo: clientFilters.dateTo || "",
   });
@@ -48,40 +60,47 @@ const NotificationSend: React.FC = () => {
   const itemsPerPage = 10;
 
   useEffect(() => {
-    if (id) {
-      // Load notification
-      const loadNotification = async () => {
-        const { data } = await supabase
-          .from("notifications")
-          .select("*")
-          .eq("id", id)
-          .single();
+    if (!id) return;
+    const loadNotification = async () => {
+      const { data } = await supabase
+        .from("notifications")
+        .select("*")
+        .eq("id", id)
+        .single();
+      if (data) setSelectedNotification(data);
+    };
+    loadNotification();
+  }, [id, setSelectedNotification]);
 
-        if (data) {
-          setSelectedNotification(data);
-        }
-      };
-      loadNotification();
-    }
-
-    // Load users
+  useEffect(() => {
     fetchPublicUsers(localFilters);
-  }, [id]);
+  }, [fetchPublicUsers, localFilters]);
 
-  const handleFilterChange = (key: string, value: string | number) => {
-    const newFilters = { ...localFilters, [key]: value };
-    setLocalFilters(newFilters);
-    setClientFilters(newFilters);
-    fetchPublicUsers(newFilters);
+  const handleFilterChange = (
+    key: keyof LocalFilters,
+    value: string | number
+  ) => {
+    const next: LocalFilters = { ...localFilters };
+    if (key === "minSpent" || key === "maxSpent") {
+      const v = value === "" ? undefined : Number(value);
+      next[key] = Number.isNaN(v as number)
+        ? undefined
+        : (v as number | undefined);
+    } else {
+      next[key] = String(value);
+    }
+    setLocalFilters(next);
+    setClientFilters(next);
+    fetchPublicUsers(next);
   };
 
   const handleResetFilters = () => {
-    const resetFilters = {
+    const resetFilters: LocalFilters = {
       name: "",
       subscriptionType: "",
       location: "",
-      minSpent: "",
-      maxSpent: "",
+      minSpent: undefined,
+      maxSpent: undefined,
       dateFrom: "",
       dateTo: "",
     };

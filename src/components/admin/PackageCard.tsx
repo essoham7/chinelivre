@@ -21,6 +21,21 @@ export function PackageCard({
   onEdit,
   onChat,
 }: PackageCardProps) {
+  type PackageListItem = Package & {
+    client?: {
+      first_name?: string | null;
+      last_name?: string | null;
+      company?: string | null;
+      email?: string | null;
+      phone?: string | null;
+    };
+    photos?: Array<{
+      url: string | null;
+      storage_path: string;
+      is_primary: boolean;
+    }>;
+  };
+  const p = pkg as unknown as PackageListItem;
   const getStatusBadge = (status: string) => {
     const statusConfig = {
       received_china: {
@@ -80,12 +95,12 @@ export function PackageCard({
 
           <p className="text-gray-600 mb-3">{pkg.content}</p>
 
-          {((pkg as any).photos && (pkg as any).photos.length > 0) && (
+          {p.photos && p.photos.length > 0 && (
             <div className="mb-3 grid grid-cols-4 gap-2">
-              {((pkg as any).photos as any[]).slice(0, 4).map((ph: any, idx: number) => (
+              {p.photos.slice(0, 4).map((ph, idx) => (
                 <img
                   key={idx}
-                  src={ph.url || ''}
+                  src={ph.url || ""}
                   alt={`Photo ${idx + 1}`}
                   className="w-full h-16 object-cover rounded border"
                 />
@@ -97,9 +112,10 @@ export function PackageCard({
             <div className="flex items-center">
               <User className="h-4 w-4 mr-1" />
               <span>
-                Client: {((pkg as any).client?.first_name || "").trim()} {((pkg as any).client?.last_name || "").trim()}
-                {((pkg as any).client?.company && ((pkg as any).client?.company as string).trim().length > 0)
-                  ? ` (${(pkg as any).client?.company})`
+                Client: {(p.client?.first_name || "").trim()}{" "}
+                {(p.client?.last_name || "").trim()}
+                {p.client?.company && p.client.company.trim().length > 0
+                  ? ` (${p.client.company})`
                   : ""}
               </span>
             </div>
@@ -141,10 +157,10 @@ export function PackageCard({
           >
             <MessageCircle className="h-4 w-4" />
           </button>
-          {((pkg as any).client?.phone) && (
+          {p.client?.phone && (
             <a
               href={buildWhatsappUrl(
-                (pkg as any).client.phone,
+                p.client.phone,
                 `Bonjour, concernant le colis ${pkg.tracking_number}`
               )}
               target="_blank"

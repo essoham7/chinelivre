@@ -1,6 +1,9 @@
 import { create } from 'zustand'
 
-type BeforeInstallPromptEvent = any
+export interface BeforeInstallPromptEvent extends Event {
+  prompt: () => Promise<{ outcome: 'accepted' | 'dismissed' }>
+  userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }>
+}
 
 interface PwaState {
   deferredPrompt: BeforeInstallPromptEvent | null
@@ -10,7 +13,7 @@ interface PwaState {
   clear: () => void
 }
 
-export const usePwaStore = create<PwaState>((set, get) => ({
+export const usePwaStore = create<PwaState>((set) => ({
   deferredPrompt: null,
   showPrompt: false,
   setDeferredPrompt: (e) => set({ deferredPrompt: e }),
