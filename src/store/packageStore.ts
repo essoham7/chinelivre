@@ -68,11 +68,6 @@ export const usePackageStore = create<PackageState>((set, get) => ({
       return;
     }
 
-    type PackageRow = {
-      id: string;
-      client_id: string | null;
-      archived?: boolean;
-    };
     const rows = (data || []) as unknown as Package[];
     const clientIds = Array.from(
       new Set(rows.map((p) => p.client_id).filter(Boolean))

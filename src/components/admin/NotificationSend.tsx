@@ -159,10 +159,7 @@ const NotificationSend: React.FC = () => {
   };
 
   // Pagination
-  const filteredUsers = publicUsers.filter((user) => {
-    // Additional client-side filtering if needed
-    return true;
-  });
+  const filteredUsers = publicUsers;
 
   const totalPages = Math.ceil(filteredUsers.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
@@ -325,7 +322,7 @@ const NotificationSend: React.FC = () => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center">
+                  <label className="text-sm font-medium text-gray-700 mb-1 flex items-center">
                     <MapPin className="h-3 w-3 mr-1" />
                     Localisation
                   </label>
@@ -341,7 +338,7 @@ const NotificationSend: React.FC = () => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center">
+                  <label className="text-sm font-medium text-gray-700 mb-1 flex items-center">
                     <DollarSign className="h-3 w-3 mr-1" />
                     Dépenses totales
                   </label>
@@ -368,7 +365,7 @@ const NotificationSend: React.FC = () => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center">
+                  <label className="text-sm font-medium text-gray-700 mb-1 flex items-center">
                     <Calendar className="h-3 w-3 mr-1" />
                     Date d'inscription
                   </label>

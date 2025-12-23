@@ -8,7 +8,13 @@ interface AuthState {
   role: UserRole | null;
   loading: boolean;
   signIn: (email: string, password: string) => Promise<void>;
-  signUp: (email: string, password: string, role: UserRole) => Promise<void>;
+  signUp: (
+    email: string,
+    password: string,
+    role: UserRole,
+    firstName: string,
+    lastName: string
+  ) => Promise<void>;
   signOut: () => Promise<void>;
   checkUser: () => Promise<void>;
 }
@@ -26,11 +32,26 @@ export const useAuthStore = create<AuthState>((set) => ({
 
     if (error) throw error;
 
-    const role = data.user?.user_metadata?.role as UserRole;
-    set({ user: data.user, role });
+    let role = data.user?.user_metadata?.role as UserRole | null;
+    const userId = data.user?.id;
+    if (userId) {
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("role")
+        .eq("id", userId)
+        .single();
+      role = (profile?.role as UserRole) ?? role ?? null;
+    }
+    set({ user: data.user, role: role ?? null });
   },
 
-  signUp: async (email: string, password: string, role: UserRole) => {
+  signUp: async (
+    email: string,
+    password: string,
+    role: UserRole,
+    firstName: string,
+    lastName: string
+  ) => {
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
@@ -40,6 +61,20 @@ export const useAuthStore = create<AuthState>((set) => ({
     });
 
     if (error) throw error;
+
+    const userId = data.user?.id;
+    if (userId) {
+      await supabase
+        .from("profiles")
+        .upsert({
+          id: userId,
+          email,
+          role,
+          first_name: firstName,
+          last_name: lastName,
+        });
+    }
+
     set({ user: data.user, role });
   },
 
@@ -53,7 +88,15 @@ export const useAuthStore = create<AuthState>((set) => ({
     const {
       data: { user },
     } = await supabase.auth.getUser();
-    const role = user?.user_metadata?.role as UserRole;
-    set({ user, role, loading: false });
+    let role = user?.user_metadata?.role as UserRole | null;
+    if (user?.id) {
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("role")
+        .eq("id", user.id)
+        .single();
+      role = (profile?.role as UserRole) ?? role ?? null;
+    }
+    set({ user, role: role ?? null, loading: false });
   },
 }));

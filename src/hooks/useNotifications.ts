@@ -1,5 +1,5 @@
 import { supabase } from "../lib/supabase";
-import { Notification } from "../lib/supabase";
+import { Notification, Package } from "../lib/supabase";
 import {
   formatStatusNotification,
   formatCreatedNotification,
@@ -12,7 +12,7 @@ export const createNotification = async (
   type: Notification["type"],
   title: string,
   content?: string
-) => {
+): Promise<Notification | null> => {
   const { data, error } = await supabase
     .from("notifications")
     .insert([
@@ -31,7 +31,7 @@ export const createNotification = async (
     console.error("Error creating notification:", error);
     return null;
   }
-  return data as any;
+  return data as Notification;
 };
 
 export const notifyPackageCreated = async (
@@ -47,20 +47,23 @@ export const notifyPackageCreated = async (
     "Statut ajouté",
     content
   );
-  if (created && (created as any).id) {
-    const ins = await supabase
-      .from("user_notifications")
-      .insert([
-        {
-          notification_id: (created as any).id,
-          user_id: clientId,
-          status: "unread",
-        },
-      ]);
+  if (created?.id) {
+    const ins = await supabase.from("user_notifications").insert([
+      {
+        notification_id: created.id,
+        user_id: clientId,
+        status: "unread",
+      },
+    ]);
     if (ins.error) {
       const msg = String(ins.error.message || "");
-      if (!msg.includes("Could not find the table 'public.user_notifications'")) {
-        console.error("Error inserting user_notifications (package_created):", ins.error);
+      if (
+        !msg.includes("Could not find the table 'public.user_notifications'")
+      ) {
+        console.error(
+          "Error inserting user_notifications (package_created):",
+          ins.error
+        );
       }
     }
   }
@@ -70,14 +73,13 @@ export const notifyStatusUpdated = async (
   clientId: string,
   packageId: string,
   trackingNumber: string,
-  newStatus: string,
+  newStatus: Package["status"],
   location?: string
 ) => {
-  const content = formatStatusNotification(
-    trackingNumber,
-    newStatus as any,
-    { location, updatedAt: new Date() }
-  );
+  const content = formatStatusNotification(trackingNumber, newStatus, {
+    location,
+    updatedAt: new Date(),
+  });
   await createNotification(
     clientId,
     packageId,
@@ -106,18 +108,18 @@ export const notifyNewMessage = async (
     content
   );
   if (created && created.id) {
-    const ins = await supabase
-      .from("user_notifications")
-      .insert([
-        {
-          notification_id: created.id,
-          user_id: recipientId,
-          status: "unread",
-        },
-      ]);
+    const ins = await supabase.from("user_notifications").insert([
+      {
+        notification_id: created.id,
+        user_id: recipientId,
+        status: "unread",
+      },
+    ]);
     if (ins.error) {
       const msg = String(ins.error.message || "");
-      if (!msg.includes("Could not find the table 'public.user_notifications'")) {
+      if (
+        !msg.includes("Could not find the table 'public.user_notifications'")
+      ) {
         console.error("Error inserting user_notifications:", ins.error);
       }
     }

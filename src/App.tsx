@@ -2,15 +2,15 @@ import { useEffect } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { useAuthStore } from "./store/authStore";
 import { ProtectedRoute } from "./components/auth/ProtectedRoute";
-import { LoginForm } from "./components/auth/LoginForm";
+import { AuthPage } from "./pages/AuthPage";
 import { AdminDashboard } from "./components/admin/AdminDashboard";
 import { ClientDashboard } from "./components/client/ClientDashboard";
 
-import { UserRole } from "./lib/supabase";
 import { ProfileForm } from "./components/profile/ProfileForm";
 import NotificationDashboard from "./components/admin/NotificationDashboard";
 import NotificationForm from "./components/admin/NotificationForm";
 import NotificationSend from "./components/admin/NotificationSend";
+import AdminUsers from "./components/admin/AdminUsers";
 import ClientNotifications from "./components/notifications/ClientNotifications";
 import { Layout } from "./components/layout/Layout";
 import { Splash } from "./components/pwa/Splash";
@@ -46,14 +46,17 @@ function App() {
           />
 
           <Route
+            path="/dashboard"
+            element={<Navigate to={getDashboardRoute()} replace />}
+          />
+
+          <Route
             path="/login"
             element={
               user ? (
                 <Navigate to={getDashboardRoute()} replace />
               ) : (
-                <div className="min-h-screen flex items-center justify-center">
-                  <LoginForm />
-                </div>
+                <AuthPage />
               )
             }
           />
@@ -61,13 +64,7 @@ function App() {
           <Route
             path="/register"
             element={
-              user ? (
-                <Navigate to="/client/dashboard" replace />
-              ) : (
-                <div className="min-h-screen flex items-center justify-center">
-                  <LoginForm defaultRole="client" />
-                </div>
-              )
+              user ? <Navigate to="/client/dashboard" replace /> : <AuthPage />
             }
           />
 
@@ -79,6 +76,7 @@ function App() {
                 <ProtectedRoute requiredRole="admin">
                   <Routes>
                     <Route path="dashboard" element={<AdminDashboard />} />
+                    <Route path="users" element={<AdminUsers />} />
                     <Route path="profile" element={<ProfileForm />} />
                     <Route
                       path="notifications"
@@ -128,7 +126,7 @@ function App() {
             <Route
               path="/profile"
               element={
-                <ProtectedRoute requiredRole={"client" as UserRole}>
+                <ProtectedRoute>
                   <ProfileForm />
                 </ProtectedRoute>
               }
