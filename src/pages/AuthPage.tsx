@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { LoginForm } from "../components/auth/LoginForm";
 import { RegisterForm } from "../components/auth/RegisterForm";
+import { InstallPrompt } from "../components/pwa/InstallPrompt";
 
 export function AuthPage() {
   const [isLogin, setIsLogin] = useState(true);
@@ -17,16 +18,14 @@ export function AuthPage() {
   return (
     <div className="min-h-screen">
       {isLogin ? (
-        <LoginForm 
-          onSuccess={handleSuccess} 
-          onToggleForm={handleToggleForm}
-        />
+        <LoginForm onSuccess={handleSuccess} onToggleForm={handleToggleForm} />
       ) : (
-        <RegisterForm 
-          onSuccess={handleSuccess} 
+        <RegisterForm
+          onSuccess={handleSuccess}
           onToggleForm={handleToggleForm}
         />
       )}
+      <InstallPrompt triggerOnMount />
     </div>
   );
 }

@@ -132,7 +132,7 @@ export function Layout() {
           <Outlet />
         </main>
         <BottomNav />
-        <InstallPrompt />
+        <InstallPrompt triggerOnMount />
       </div>
     </div>
   );

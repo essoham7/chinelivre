@@ -257,7 +257,157 @@ export default function AdminUsers() {
         </div>
       )}
 
-      <div className="bg-white rounded-lg shadow overflow-hidden">
+      {/* Vue mobile en cartes */}
+      <div className="sm:hidden space-y-3">
+        {profiles.map((p) => (
+          <div key={p.id} className="bg-white rounded-lg shadow p-4">
+            <div className="flex justify-between items-start">
+              <div className="space-y-1">
+                {editingId === p.id ? (
+                  <div className="flex space-x-2">
+                    <input
+                      className="border rounded px-2 py-1 w-32"
+                      value={draft.first_name ?? ""}
+                      onChange={(e) =>
+                        setDraft((d) => ({ ...d, first_name: e.target.value }))
+                      }
+                    />
+                    <input
+                      className="border rounded px-2 py-1 w-32"
+                      value={draft.last_name ?? ""}
+                      onChange={(e) =>
+                        setDraft((d) => ({ ...d, last_name: e.target.value }))
+                      }
+                    />
+                  </div>
+                ) : (
+                  <div className="text-sm font-medium text-gray-900">
+                    {(p.first_name || "").toString()}{" "}
+                    {(p.last_name || "").toString()}
+                  </div>
+                )}
+                <div className="text-xs text-gray-500">{p.email}</div>
+                <div>
+                  <span
+                    className={`px-2 py-1 rounded text-xs ${
+                      p.role === "admin"
+                        ? "bg-purple-100 text-purple-700"
+                        : "bg-gray-100 text-gray-700"
+                    }`}
+                  >
+                    {p.role || "client"}
+                  </span>
+                </div>
+                <div className="text-xs text-gray-700">
+                  Ville:{" "}
+                  {editingId === p.id ? (
+                    <input
+                      className="border rounded px-2 py-1 w-32 ml-2"
+                      value={draft.city ?? ""}
+                      onChange={(e) =>
+                        setDraft((d) => ({ ...d, city: e.target.value }))
+                      }
+                    />
+                  ) : (
+                    <span className="ml-1">{p.city}</span>
+                  )}
+                </div>
+                <div className="text-xs text-gray-700">
+                  Téléphone:{" "}
+                  {editingId === p.id ? (
+                    <input
+                      className="border rounded px-2 py-1 w-32 ml-2"
+                      value={draft.phone ?? ""}
+                      onChange={(e) =>
+                        setDraft((d) => ({ ...d, phone: e.target.value }))
+                      }
+                    />
+                  ) : (
+                    <span className="ml-1">{p.phone}</span>
+                  )}
+                </div>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {editingId === p.id ? (
+                  <>
+                    <button
+                      onClick={() => {
+                        setConfirmTitle("Confirmer");
+                        setConfirmMessage("Enregistrer les modifications ?");
+                        setConfirmAction(() => saveEdit);
+                        setConfirmOpen(true);
+                      }}
+                      className="inline-flex items-center px-2 py-1 bg-green-600 text-white rounded hover:bg-green-700"
+                    >
+                      <Check className="h-4 w-4" />
+                    </button>
+                    <button
+                      onClick={cancelEdit}
+                      className="inline-flex items-center px-2 py-1 bg-gray-200 text-gray-700 rounded hover:bg-gray-300"
+                    >
+                      Annuler
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <button
+                      onClick={() => startEdit(p)}
+                      className="inline-flex items-center px-2 py-1 bg-blue-600 text-white rounded hover:bg-blue-700"
+                    >
+                      <Pencil className="h-4 w-4" />
+                    </button>
+                    {p.role !== "admin" ? (
+                      <button
+                        onClick={() => {
+                          setConfirmTitle("Promouvoir");
+                          setConfirmMessage(
+                            "Promouvoir cet utilisateur en administrateur ?"
+                          );
+                          setConfirmAction(() => () => promote(p.id));
+                          setConfirmOpen(true);
+                        }}
+                        className="inline-flex items-center px-2 py-1 bg-purple-600 text-white rounded hover:bg-purple-700"
+                      >
+                        <ArrowUpCircle className="h-4 w-4" />
+                      </button>
+                    ) : (
+                      <button
+                        onClick={() => {
+                          setConfirmTitle("Rétrograder");
+                          setConfirmMessage(
+                            "Rétrograder cet administrateur en client ?"
+                          );
+                          setConfirmAction(() => () => demote(p.id));
+                          setConfirmOpen(true);
+                        }}
+                        className="inline-flex items-center px-2 py-1 bg-yellow-500 text-white rounded hover:bg-yellow-600"
+                      >
+                        <ArrowDownCircle className="h-4 w-4" />
+                      </button>
+                    )}
+                    <button
+                      onClick={() => {
+                        setConfirmTitle("Supprimer");
+                        setConfirmMessage(
+                          "Supprimer ce profil ? Cette action est irréversible."
+                        );
+                        setConfirmAction(() => () => remove(p.id));
+                        setConfirmOpen(true);
+                      }}
+                      className="inline-flex items-center px-2 py-1 bg-red-600 text-white rounded hover:bg-red-700"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </button>
+                  </>
+                )}
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Vue desktop en tableau */}
+      <div className="hidden sm:block bg-white rounded-lg shadow overflow-hidden">
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>

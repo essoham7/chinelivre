@@ -56,17 +56,18 @@ export function AdminDashboard() {
   }
 
   return (
-    <div className="p-6">
-      <div className="mb-8">
-        <div className="flex justify-between items-center mb-6">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900">
+    <div className="px-3 py-4 sm:px-6">
+      <div className="max-w-md mx-auto sm:max-w-4xl">
+        <div className="mb-8">
+          <div className="flex justify-between items-center mb-6">
+            <div>
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
               Tableau de bord Admin
             </h1>
             <p className="text-gray-600">
               Gérez vos colis et suivez leur progression
             </p>
-          </div>
+            </div>
           <div className="flex space-x-3">
             <button
               onClick={() => navigate("/admin/notifications")}
@@ -86,7 +87,7 @@ export function AdminDashboard() {
         </div>
 
         <PackageStats stats={stats} />
-      </div>
+        </div>
 
       {showForm && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -186,6 +187,7 @@ export function AdminDashboard() {
             )
           )}
         </div>
+      </div>
       </div>
     </div>
   );
