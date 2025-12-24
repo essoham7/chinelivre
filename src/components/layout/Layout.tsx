@@ -40,13 +40,13 @@ export function Layout() {
       >
         <div className="flex flex-col h-full">
           {/* Logo */}
-          <div className="flex items-center justify-between h-16 px-6 bg-blue-600 text-white">
+          <div className="flex items-center justify-between h-16 px-6 bg-gradient-to-r from-red-800 to-red-700 text-white">
             <div className="flex items-center space-x-2">
               <Package className="h-6 w-6" />
-              <span className="text-xl font-bold">ChineLivre</span>
+              <span className="text-xl font-bold tracking-tight">ChineLivre</span>
             </div>
             <button
-              className="lg:hidden text-white"
+              className="lg:hidden text-white hover:bg-white/10 rounded p-1 transition-colors"
               onClick={() => setIsSidebarOpen(false)}
             >
               <X className="h-6 w-6" />
@@ -77,15 +77,15 @@ export function Layout() {
                         clsx(
                           "flex items-center px-4 py-3 text-sm font-medium rounded-md transition-colors",
                           isActive
-                            ? "bg-blue-50 text-blue-700 border-l-4 border-blue-600"
-                            : "text-gray-700 hover:bg-gray-100 hover:text-gray-900"
+                            ? "bg-red-50 text-red-700 border-l-4 border-red-700 shadow-sm"
+                            : "text-gray-600 hover:bg-gray-50 hover:text-gray-900 group"
                         )
                       }
                     >
                       <item.icon
                         className={clsx(
                           "mr-3 h-5 w-5",
-                          isActive ? "text-blue-600" : "text-gray-400"
+                          isActive ? "text-red-700" : "text-gray-400 group-hover:text-gray-500"
                         )}
                       />
                       {item.name}

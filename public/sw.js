@@ -1,41 +1,48 @@
-const CACHE_NAME = 'chinelivre-v1'
-const ASSETS = ['/', '/index.html']
+const CACHE_NAME = "chinelivre-v1";
+const ASSETS = ["/", "/index.html"];
 
-self.addEventListener('install', (event) => {
-  event.waitUntil(caches.open(CACHE_NAME).then((cache) => cache.addAll(ASSETS)))
-  self.skipWaiting()
-})
+self.addEventListener("install", (event) => {
+  event.waitUntil(
+    caches.open(CACHE_NAME).then((cache) => cache.addAll(ASSETS))
+  );
+  self.skipWaiting();
+});
 
-self.addEventListener('activate', (event) => {
+self.addEventListener("activate", (event) => {
   event.waitUntil(
     caches
       .keys()
-      .then((keys) => Promise.all(keys.filter((k) => k !== CACHE_NAME).map((k) => caches.delete(k))))
-  )
-  self.clients.claim()
-})
+      .then((keys) =>
+        Promise.all(
+          keys.filter((k) => k !== CACHE_NAME).map((k) => caches.delete(k))
+        )
+      )
+  );
+  self.clients.claim();
+});
 
-self.addEventListener('fetch', (event) => {
-  const { request } = event
-  if (request.method !== 'GET') return
-  const url = new URL(request.url)
-  if (url.protocol !== 'http:' && url.protocol !== 'https:') return
-  if (url.origin !== self.location.origin) return
+self.addEventListener("fetch", (event) => {
+  const { request } = event;
+  if (request.method !== "GET") return;
+  const url = new URL(request.url);
+  if (url.protocol !== "http:" && url.protocol !== "https:") return;
+  if (url.origin !== self.location.origin) return;
 
   event.respondWith(
     caches.match(request).then((cached) => {
       const network = fetch(request)
         .then((response) => {
-          const clone = response.clone()
-          if (response.ok) caches.open(CACHE_NAME).then((cache) => cache.put(request, clone))
-          return response
+          const clone = response.clone();
+          if (response.ok)
+            caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
+          return response;
         })
-        .catch(() => cached)
-      return cached || network
+        .catch(() => cached);
+      return cached || network;
     })
-  )
-})
+  );
+});
 
-self.addEventListener('message', (event) => {
-  if (event.data && event.data.type === 'SKIP_WAITING') self.skipWaiting()
-})
+self.addEventListener("message", (event) => {
+  if (event.data && event.data.type === "SKIP_WAITING") self.skipWaiting();
+});

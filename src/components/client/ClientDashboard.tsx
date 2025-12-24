@@ -64,23 +64,23 @@ export function ClientDashboard() {
 
   if (loading) {
     return (
-      <div className="p-6">
+      <div className="p-6 max-w-7xl mx-auto">
         <div className="mb-8">
           <SkeletonLine width="w-1/3" />
           <SkeletonLine width="w-1/2" className="mt-2" />
         </div>
-        <div className="space-y-2">
+        <div className="space-y-3">
           {[...Array(5)].map((_, i) => (
             <SkeletonCard key={i} />
           ))}
         </div>
         {timeoutError && (
-          <div className="mt-6 bg-red-50 border border-red-200 rounded-lg p-4">
+          <div className="mt-6 bg-red-50 border border-red-100 rounded-xl p-4 shadow-sm">
             <div className="flex">
-              <Bell className="h-5 w-5 text-red-400 mt-0.5" />
+              <Bell className="h-5 w-5 text-red-500 mt-0.5" />
               <div className="ml-3">
-                <h3 className="text-sm font-medium text-red-800">Erreur</h3>
-                <p className="mt-2 text-sm text-red-700">{timeoutError}</p>
+                <h3 className="text-sm font-semibold text-red-800">Erreur de connexion</h3>
+                <p className="mt-1 text-sm text-red-600 opacity-90">{timeoutError}</p>
               </div>
             </div>
           </div>
@@ -98,39 +98,44 @@ export function ClientDashboard() {
   return (
     <div className="p-6">
       <div className="mb-8">
-        <div className="flex justify-between items-center mb-6">
+        <div className="flex flex-col md:flex-row md:justify-between md:items-center mb-8 gap-4">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">
-              Bonjour {displayName}!
+            <h1 className="text-3xl font-bold text-gray-900 tracking-tight">
+              Bonjour, {displayName}
             </h1>
-            <p className="text-gray-600">Suivez vos colis en temps réel</p>
+            <p className="text-gray-500 mt-1">
+              Bienvenue sur votre espace de suivi.
+            </p>
           </div>
           <button
             onClick={() => navigate("/client/notifications")}
-            className="bg-purple-600 text-white px-4 py-2 rounded-md hover:bg-purple-700 flex items-center space-x-2"
+            className="w-full md:w-auto bg-white border border-gray-200 text-gray-700 px-4 py-2.5 rounded-xl hover:bg-gray-50 hover:border-red-100 hover:text-red-700 transition-all shadow-sm flex items-center justify-center space-x-2 group"
           >
-            <Bell className="h-4 w-4" />
-            <span>Mes notifications</span>
+            <Bell className="h-4 w-4 text-gray-400 group-hover:text-red-700 transition-colors" />
+            <span className="font-medium">Notifications</span>
           </button>
         </div>
       </div>
 
-      <div className="bg-white rounded-lg shadow">
-        <div className="px-6 py-4 border-b border-gray-200">
-          <h2 className="text-xl font-semibold text-gray-900 flex items-center">
-            <PackageIcon className="h-5 w-5 mr-2" />
-            Mes colis ({packages.length})
+      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+        <div className="px-6 py-5 border-b border-gray-100 bg-gray-50/50 flex items-center justify-between">
+          <h2 className="text-lg font-bold text-gray-900 flex items-center">
+            <div className="p-2 bg-red-50 rounded-lg mr-3">
+              <PackageIcon className="h-5 w-5 text-red-700" />
+            </div>
+            Mes colis <span className="ml-2 text-gray-400 font-normal text-sm">({packages.length})</span>
           </h2>
         </div>
 
-        <div className="divide-y divide-gray-200">
+        <div className="divide-y divide-gray-50">
           {packages.length === 0 ? (
-            <div className="p-8 text-center text-gray-500">
-              <PackageIcon className="h-12 w-12 mx-auto mb-4 text-gray-300" />
-              <p>Aucun colis trouvé</p>
-              <p className="text-sm">
-                Vos colis apparaîtront ici une fois enregistrés par votre
-                transitaire
+            <div className="py-16 text-center">
+              <div className="bg-gray-50 h-24 w-24 rounded-full flex items-center justify-center mx-auto mb-4">
+                <PackageIcon className="h-10 w-10 text-gray-300" />
+              </div>
+              <h3 className="text-lg font-medium text-gray-900">Aucun colis</h3>
+              <p className="text-gray-500 mt-1 max-w-sm mx-auto">
+                Vos colis apparaîtront ici une fois enregistrés par nos services.
               </p>
             </div>
           ) : (

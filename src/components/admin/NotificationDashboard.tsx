@@ -121,7 +121,7 @@ const NotificationDashboard: React.FC = () => {
   if (loading) {
     return (
       <div className="flex justify-center items-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-700"></div>
       </div>
     );
   }
@@ -156,7 +156,7 @@ const NotificationDashboard: React.FC = () => {
         </div>
         <button
           onClick={() => navigate("/admin/notifications/create")}
-          className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2 transition-colors"
+          className="bg-red-700 hover:bg-red-800 text-white px-4 py-2 rounded-lg flex items-center space-x-2 transition-colors shadow-lg shadow-red-900/20"
         >
           <Plus className="h-4 w-4" />
           <span>Nouvelle Notification</span>
@@ -223,7 +223,7 @@ const NotificationDashboard: React.FC = () => {
                   onChange={(e) =>
                     handleFilterChange("priority", e.target.value)
                   }
-                  className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-red-500"
                 >
                   <option value="">Toutes les priorités</option>
                   <option value="low">Faible</option>
@@ -294,7 +294,7 @@ const NotificationDashboard: React.FC = () => {
             </p>
             <button
               onClick={() => navigate("/admin/notifications/create")}
-              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg inline-flex items-center space-x-2 transition-colors"
+              className="bg-red-700 hover:bg-red-800 text-white px-4 py-2 rounded-lg inline-flex items-center space-x-2 transition-colors"
             >
               <Plus className="h-4 w-4" />
               <span>Créer une notification</span>
@@ -379,7 +379,7 @@ const NotificationDashboard: React.FC = () => {
                                 `/admin/notifications/send/${notification.id}`
                               )
                             }
-                            className="text-blue-600 hover:text-blue-900 p-1"
+                            className="text-green-600 hover:text-green-800 p-1"
                             title="Envoyer"
                           >
                             <Send className="h-4 w-4" />

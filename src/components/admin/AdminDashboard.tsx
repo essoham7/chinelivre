@@ -49,8 +49,10 @@ export function AdminDashboard() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+      <div className="flex items-center justify-between min-h-screen bg-gray-50">
+        <div className="ml-auto mr-auto">
+             <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-red-700"></div>
+        </div>
       </div>
     );
   }
@@ -71,14 +73,14 @@ export function AdminDashboard() {
           <div className="flex space-x-3">
             <button
               onClick={() => navigate("/admin/notifications")}
-              className="bg-purple-600 text-white px-4 py-2 rounded-md hover:bg-purple-700 flex items-center space-x-2"
+              className="bg-white border border-gray-200 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-50 hover:border-red-200 hover:text-red-700 transition-all font-medium text-sm flex items-center space-x-2 shadow-sm"
             >
               <Bell className="h-4 w-4" />
-              <span>Notifications</span>
+              <span className="hidden sm:inline">Notifications</span>
             </button>
             <button
               onClick={() => setShowForm(true)}
-              className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 flex items-center space-x-2"
+              className="bg-red-700 text-white px-5 py-2 rounded-lg hover:bg-red-800 transition-all font-medium text-sm flex items-center space-x-2 shadow-lg shadow-red-900/20"
             >
               <Plus className="h-4 w-4" />
               <span>Nouveau colis</span>
@@ -126,35 +128,38 @@ export function AdminDashboard() {
         </div>
       )}
 
-      <div className="bg-white rounded-lg shadow">
+      <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
         <div className="px-6 py-4 border-b border-gray-200">
           <div className="flex items-center justify-between">
-            <h2 className="text-xl font-semibold text-gray-900 flex items-center">
-              <PackageIcon className="h-5 w-5 mr-2" />
+            <h2 className="text-lg font-bold text-gray-900 flex items-center">
+               <div className="p-2 bg-red-50 rounded-lg mr-3">
+                 <PackageIcon className="h-5 w-5 text-red-700" />
+               </div>
               {tab === "active"
-                ? `Liste des colis (${activePackages.length})`
-                : `Colis archivés (${archivedPackages.length})`}
+                ? "Tous les colis"
+                : "Archives"} 
+               <span className="ml-2 text-gray-400 font-normal text-sm">({tab === "active" ? activePackages.length : archivedPackages.length})</span>
             </h2>
-            <div className="flex space-x-4">
+            <div className="flex space-x-2 bg-gray-100 p-1 rounded-lg">
               <button
                 onClick={() => setTab("active")}
-                className={`px-3 py-1 rounded-md text-sm ${
+                className={`px-4 py-1.5 rounded-md text-sm font-medium transition-all ${
                   tab === "active"
-                    ? "bg-blue-600 text-white"
-                    : "bg-gray-100 text-gray-700"
+                    ? "bg-white text-gray-900 shadow-sm"
+                    : "text-gray-500 hover:text-gray-700"
                 }`}
               >
                 Actifs
               </button>
               <button
                 onClick={() => setTab("archived")}
-                className={`px-3 py-1 rounded-md text-sm ${
+                className={`px-4 py-1.5 rounded-md text-sm font-medium transition-all ${
                   tab === "archived"
-                    ? "bg-blue-600 text-white"
-                    : "bg-gray-100 text-gray-700"
+                    ? "bg-white text-gray-900 shadow-sm"
+                    : "text-gray-500 hover:text-gray-700"
                 }`}
               >
-                Colis archivés
+                Archivés
               </button>
             </div>
           </div>

@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { useAuthStore } from "./store/authStore";
 import { ProtectedRoute } from "./components/auth/ProtectedRoute";
 import { AuthPage } from "./pages/AuthPage";
+import { LandingPage } from "./pages/LandingPage";
 import { AdminDashboard } from "./components/admin/AdminDashboard";
 import { ClientDashboard } from "./components/client/ClientDashboard";
 
@@ -31,7 +32,7 @@ function App() {
   }
 
   const getDashboardRoute = () => {
-    if (!user) return "/login";
+    if (!user) return "/landing";
     return role === "admin" ? "/admin/dashboard" : "/client/dashboard";
   };
 
@@ -67,6 +68,8 @@ function App() {
               user ? <Navigate to="/client/dashboard" replace /> : <AuthPage />
             }
           />
+
+          <Route path="/landing" element={<LandingPage />} />
 
           {/* Authenticated Routes with Layout */}
           <Route element={<Layout />}>

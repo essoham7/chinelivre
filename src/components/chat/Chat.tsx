@@ -1,9 +1,9 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { supabase } from "../../lib/supabase";
 import { Message } from "../../lib/supabase";
 import { useAuthStore } from "../../store/authStore";
 import { Send, Check, CheckCheck, AlertCircle } from "lucide-react";
-import { notifyNewMessage } from "../../hooks/useNotifications";
+import type { RealtimeChannel } from "@supabase/supabase-js";
 
 interface ChatProps {
   packageId: string;
@@ -15,10 +15,10 @@ export function Chat({ packageId }: ChatProps) {
   const [loading, setLoading] = useState(true);
   const [timeoutError, setTimeoutError] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const channelRef = useRef<any>(null);
+  const channelRef = useRef<RealtimeChannel | null>(null);
   const { user } = useAuthStore();
 
-  const addOrUpdateMessage = (msg: Message) => {
+  const addOrUpdateMessage = useCallback((msg: Message) => {
     setMessages((prev) => {
       const idx = prev.findIndex((m) => m.id === msg.id);
       if (idx === -1) return [...prev, msg];
@@ -26,20 +26,73 @@ export function Chat({ packageId }: ChatProps) {
       next[idx] = msg;
       return next;
     });
-  };
+  }, []);
 
   useEffect(() => {
-    loadMessages();
-    const channel = subscribeToMessages();
+    let active = true;
+    const run = async () => {
+      const { data, error } = await supabase
+        .from("messages")
+        .select("*")
+        .eq("package_id", packageId)
+        .order("created_at", { ascending: true });
+
+      if (!error && data && active) {
+        setMessages(data);
+        if (user?.id) {
+          await supabase
+            .from("messages")
+            .update({ is_read: true })
+            .eq("package_id", packageId)
+            .neq("sender_id", user.id)
+            .eq("is_read", false);
+        }
+      }
+      if (active) setLoading(false);
+    };
+
+    run();
+
+    const channel = supabase
+      .channel(`chat:${packageId}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "messages",
+          filter: `package_id=eq.${packageId}`,
+        },
+        (payload) => {
+          const msg = payload.new as Message;
+          addOrUpdateMessage(msg);
+        }
+      )
+      .on(
+        "postgres_changes",
+        {
+          event: "UPDATE",
+          schema: "public",
+          table: "messages",
+          filter: `package_id=eq.${packageId}`,
+        },
+        (payload) => {
+          const updated = payload.new as Message;
+          addOrUpdateMessage(updated);
+        }
+      )
+      .subscribe();
+
     channelRef.current = channel;
 
     return () => {
+      active = false;
       if (channelRef.current) {
         supabase.removeChannel(channelRef.current);
         channelRef.current = null;
       }
     };
-  }, [packageId]);
+  }, [packageId, user?.id, addOrUpdateMessage]);
 
   useEffect(() => {
     const t = setTimeout(() => {
@@ -88,60 +141,7 @@ export function Chat({ packageId }: ChatProps) {
     return () => document.removeEventListener("visibilitychange", handler);
   }, [messages, user?.id]);
 
-  const loadMessages = async () => {
-    const { data, error } = await supabase
-      .from("messages")
-      .select("*")
-      .eq("package_id", packageId)
-      .order("created_at", { ascending: true });
-
-    if (!error && data) {
-      setMessages(data);
-      // Mark incoming messages as read when opening the chat
-      if (user?.id) {
-        await supabase
-          .from("messages")
-          .update({ is_read: true })
-          .eq("package_id", packageId)
-          .neq("sender_id", user.id)
-          .eq("is_read", false);
-      }
-    }
-    setLoading(false);
-  };
-
-  const subscribeToMessages = () => {
-    const channel = supabase
-      .channel(`chat:${packageId}`)
-      .on(
-        "postgres_changes",
-        {
-          event: "INSERT",
-          schema: "public",
-          table: "messages",
-          filter: `package_id=eq.${packageId}`,
-        },
-        (payload) => {
-          const msg = payload.new as Message;
-          addOrUpdateMessage(msg);
-        }
-      )
-      .on(
-        "postgres_changes",
-        {
-          event: "UPDATE",
-          schema: "public",
-          table: "messages",
-          filter: `package_id=eq.${packageId}`,
-        },
-        (payload) => {
-          const updated = payload.new as Message;
-          addOrUpdateMessage(updated);
-        }
-      )
-      .subscribe();
-    return channel;
-  };
+  // (intégré dans l'effet ci-dessus)
 
   const sendMessage = async (e: React.FormEvent) => {
     e.preventDefault();

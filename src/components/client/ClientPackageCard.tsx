@@ -96,7 +96,7 @@ export function ClientPackageCard({
       <div className="flex justify-between items-center text-sm text-gray-500">
         <span>Reçu le: {formatDate(pkg.received_china_at)}</span>
         {pkg.estimated_arrival && (
-          <span className="text-blue-600 font-medium">
+          <span className="text-red-700 font-medium">
             Arrivée estimée: {formatDate(pkg.estimated_arrival)}
           </span>
         )}

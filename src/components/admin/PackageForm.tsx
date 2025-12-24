@@ -134,7 +134,7 @@ export function PackageForm({
         </h2>
         <button
           onClick={onCancel}
-          className="p-2 text-gray-400 hover:text-gray-600"
+          className="p-2 text-gray-400 hover:text-red-700 transition-colors"
         >
           <X className="h-5 w-5" />
         </button>
@@ -160,7 +160,7 @@ export function PackageForm({
             type="text"
             value={formData.tracking_number}
             onChange={handleInputChange}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 transition-shadow"
             required
           />
         </div>
@@ -251,7 +251,7 @@ export function PackageForm({
                     <div
                       key={client.id}
                       onClick={() => handleClientSelect(client)}
-                      className="px-4 py-2 cursor-pointer hover:bg-blue-50 text-sm text-gray-700"
+                      className="px-4 py-2 cursor-pointer hover:bg-red-50 text-sm text-gray-700"
                     >
                       {client.email}
                     </div>
@@ -333,7 +333,7 @@ export function PackageForm({
           <button
             type="submit"
             disabled={loading}
-            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
+            className="px-4 py-2 bg-red-700 text-white rounded-md hover:bg-red-800 disabled:opacity-50 transition-colors shadow-lg shadow-red-900/20"
           >
             {loading ? "Enregistrement..." : pkg ? "Mettre à jour" : "Créer"}
           </button>
